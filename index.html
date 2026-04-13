@@ -181,6 +181,37 @@
 
       </div>
 
+      <!-- Chat Toggle Button (FAB) -->
+      <button class="chat-fab" id="btn-chat-toggle" type="button" title="Mesajlar">
+        💬
+        <span class="chat-fab-badge" id="chat-unread-badge" hidden>0</span>
+      </button>
+
+      <!-- Chat Panel -->
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-panel-header">
+          <span class="chat-panel-title">💬 Mesajlar</span>
+          <button class="chat-panel-close" id="btn-chat-close" type="button">✕</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-empty">Henüz mesaj yok. Merhaba de! 👋</div>
+        </div>
+        <div class="chat-quick-bar" id="chat-quick-messages"></div>
+        <div class="chat-input-bar">
+          <input
+            type="text"
+            id="chat-input"
+            class="chat-input"
+            placeholder="Mesaj yaz..."
+            maxlength="200"
+            autocomplete="off"
+          />
+          <button class="btn btn-primary btn-sm" id="btn-chat-send" type="button">
+            Gönder
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer -->
@@ -194,6 +225,7 @@
   <script src="js/config.js"></script>
   <script src="js/presence.js"></script>
   <script src="js/timer.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

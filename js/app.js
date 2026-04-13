@@ -236,6 +236,11 @@
     if (typeof FocusPresence !== 'undefined' && currentRoomId) {
       FocusPresence.subscribe(currentRoomId, DEVICE_KEY);
     }
+
+    // Chat modülünü başlat
+    if (typeof FocusChat !== 'undefined' && currentRoomId) {
+      FocusChat.init(currentRoomId, DEVICE_KEY);
+    }
   }
 
   /**
@@ -250,6 +255,11 @@
     // Presence modülünü durdur
     if (typeof FocusPresence !== 'undefined') {
       FocusPresence.unsubscribe();
+    }
+
+    // Chat modülünü durdur
+    if (typeof FocusChat !== 'undefined') {
+      FocusChat.destroy();
     }
 
     roomScreen.hidden = true;
