@@ -1,15 +1,10 @@
 /* ═══════════════════════════════════════════════════
-   FOCUS TOGETHER — App Logic (Adım 2)
+   FOCUS TOGETHER — App Logic (Adım 3)
    ═══════════════════════════════════════════════════
-   ✅ 6 haneli rastgele oda kodu üretme
-   ✅ Kodu ekranda gösterme (animasyonlu)
-   ✅ Kodu panoya kopyalama
-   ✅ "Katıl" butonu input validasyonu
-   ✅ Supabase'e oda kaydı (INSERT)
-   ✅ Odaya katılma (SELECT + doğrulama)
-   ✅ Çakışma kontrolü (unique code)
+   ✅ Oda sistemi (oluştur / katıl / Supabase CRUD)
+   ✅ Senkron Timer (started_at tabanlı + Realtime)
+   ✅ Timer modları (Pomodoro / Uzun Odak / Kısa Sprint)
    ✅ Loading & hata durumları
-   ✅ Oda ekranına geçiş (her iki taraf için)
    ═══════════════════════════════════════════════════ */
 
 (function () {
@@ -231,12 +226,22 @@
     roomScreen.hidden = false;
     roomCodeDisplay.textContent = code;
     updateStatus('Odada — arkadaşını bekle', true);
+
+    // Timer modülünü başlat
+    if (typeof FocusTimer !== 'undefined' && currentRoomId) {
+      FocusTimer.init(currentRoomId);
+    }
   }
 
   /**
    * Oda ekranından çıkış — lobby'ye dön.
    */
   function leaveRoomScreen() {
+    // Timer modülünü durdur
+    if (typeof FocusTimer !== 'undefined') {
+      FocusTimer.destroy();
+    }
+
     roomScreen.hidden = true;
     lobbyCard.hidden = false;
     showDefaultView();
@@ -365,7 +370,7 @@
   // ═══════════════════════════════════════════════════
 
   if (supabaseClient) {
-    console.log('🎯 Focus Together — Adım 2 yüklendi');
+    console.log('🎯 Focus Together — Adım 3 yüklendi (Senkron Timer)');
     console.log('🔑 Cihaz kimliği:', DEVICE_KEY);
     updateStatus('Supabase bağlı — hazır', true);
   } else {

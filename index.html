@@ -33,7 +33,6 @@
     <!-- ═══════════════════════════════════════════ -->
     <main class="lobby-card" id="lobby-card">
 
-      <!-- Logo / Brand -->
       <div class="brand">
         <div class="brand-icon" id="brand-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -45,10 +44,8 @@
         <p class="brand-subtitle">Uzakta olsan da birlikte çalış</p>
       </div>
 
-      <!-- Error Message -->
       <div class="error-message" id="error-message" hidden></div>
 
-      <!-- Action Buttons -->
       <div class="actions" id="actions-default">
         <button class="btn btn-primary" id="btn-create-room" type="button">
           <span class="btn-icon">＋</span>
@@ -74,7 +71,6 @@
         </div>
       </div>
 
-      <!-- Room Code Display (after creation) -->
       <div class="room-created" id="room-created" hidden>
         <div class="code-label">Oda Kodun</div>
         <div class="code-display" id="code-display">
@@ -101,7 +97,6 @@
         <button class="btn btn-link" id="btn-back" type="button">← Geri dön</button>
       </div>
 
-      <!-- Status indicator -->
       <div class="status-bar" id="status-bar">
         <span class="status-dot"></span>
         <span class="status-text" id="status-text">Bağlantı bekleniyor</span>
@@ -139,16 +134,48 @@
         </div>
       </div>
 
-      <!-- Timer Area (placeholder — Adım 3'te tamamlanacak) -->
+      <!-- Timer Card -->
       <div class="timer-card">
-        <div class="timer-mode">Pomodoro — 25 dakika</div>
-        <div class="timer-display">25:00</div>
+
+        <!-- Mode Selector -->
+        <div class="timer-mode-tabs">
+          <button class="mode-tab active" data-timer-mode="pomodoro" type="button">Pomodoro</button>
+          <button class="mode-tab" data-timer-mode="long" type="button">Uzun Odak</button>
+          <button class="mode-tab" data-timer-mode="short" type="button">Kısa Sprint</button>
+        </div>
+
+        <div class="timer-mode" id="timer-mode-label">Pomodoro — 25 dakika</div>
+
+        <!-- Progress Ring + Timer -->
+        <div class="timer-ring-wrapper">
+          <svg class="timer-ring" viewBox="0 0 300 300" aria-hidden="true">
+            <circle class="timer-ring-bg" cx="150" cy="150" r="140" />
+            <circle class="timer-ring-progress" id="timer-progress" cx="150" cy="150" r="140" />
+          </svg>
+          <div class="timer-ring-inner">
+            <span class="timer-phase phase-work" id="timer-phase-label">Çalışma</span>
+            <div class="timer-display" id="timer-display">25:00</div>
+          </div>
+        </div>
+
+        <!-- Controls -->
         <div class="timer-actions">
-          <button class="btn btn-primary btn-lg" id="btn-start-timer" type="button" disabled>
-            ▶ Başlat
+          <button class="btn btn-primary btn-lg" id="btn-start-timer" type="button">
+            <span class="btn-label">Başlat</span>
+          </button>
+          <button class="btn btn-secondary btn-lg" id="btn-pause-timer" type="button" hidden>
+            <span class="btn-label">Duraklat</span>
+          </button>
+          <button class="btn btn-ghost" id="btn-reset-timer" type="button" hidden>
+            Sıfırla
           </button>
         </div>
-        <p class="timer-hint">Timer işlevselliği Adım 3'te eklenecek</p>
+
+        <!-- Pomodoro Counter -->
+        <div class="pomodoro-counter">
+          🍅 <span id="pomodoro-count">0</span> pomodoro tamamlandı
+        </div>
+
       </div>
 
     </div>
@@ -162,6 +189,7 @@
 
   <!-- App Logic -->
   <script src="js/config.js"></script>
+  <script src="js/timer.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
