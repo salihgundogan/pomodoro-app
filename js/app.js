@@ -231,6 +231,11 @@
     if (typeof FocusTimer !== 'undefined' && currentRoomId) {
       FocusTimer.init(currentRoomId);
     }
+
+    // Presence modülünü başlat
+    if (typeof FocusPresence !== 'undefined' && currentRoomId) {
+      FocusPresence.subscribe(currentRoomId, DEVICE_KEY);
+    }
   }
 
   /**
@@ -240,6 +245,11 @@
     // Timer modülünü durdur
     if (typeof FocusTimer !== 'undefined') {
       FocusTimer.destroy();
+    }
+
+    // Presence modülünü durdur
+    if (typeof FocusPresence !== 'undefined') {
+      FocusPresence.unsubscribe();
     }
 
     roomScreen.hidden = true;

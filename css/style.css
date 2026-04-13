@@ -794,6 +794,64 @@ body {
   color: var(--clr-accent);
 }
 
+/* ─── Presence ───────────────────────────────────── */
+.presence-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.presence-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--clr-surface-2);
+  border: 2px solid var(--clr-border);
+  font-size: 1rem;
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.presence-avatar.is-me {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 12px var(--clr-accent-glow);
+}
+
+.presence-avatar:not(.is-me) {
+  border-color: var(--clr-teal);
+  box-shadow: 0 0 12px var(--clr-teal-glow);
+}
+
+.presence-avatar-icon {
+  line-height: 1;
+}
+
+.presence-online-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--clr-success);
+  border: 2px solid var(--clr-surface);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* User count multi-user highlight */
+.user-count.multi-user {
+  border-color: var(--clr-teal);
+  color: var(--clr-teal);
+  background: rgba(94, 234, 212, 0.08);
+}
+
 /* ─── Responsive ─────────────────────────────────── */
 @media (max-width: 480px) {
   .lobby-card {
