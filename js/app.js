@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════════════════════
-   FOCUS TOGETHER — App Logic (Adım 3)
+   FOCUS TOGETHER — App Logic (Adım 6)
    ═══════════════════════════════════════════════════
    ✅ Oda sistemi (oluştur / katıl / Supabase CRUD)
    ✅ Senkron Timer (started_at tabanlı + Realtime)
-   ✅ Timer modları (Pomodoro / Uzun Odak / Kısa Sprint)
-   ✅ Loading & hata durumları
+   ✅ Presence (Online takibi)
+   ✅ Chat (Realtime + Notification)
+   ✅ İstatistikler (localStorage)
    ═══════════════════════════════════════════════════ */
 
 (function () {
@@ -390,9 +391,10 @@
   // ═══════════════════════════════════════════════════
 
   if (supabaseClient) {
-    console.log('🎯 Focus Together — Adım 3 yüklendi (Senkron Timer)');
+    console.log('🎯 Focus Together — Adım 6 yüklendi (Production Ready)');
     console.log('🔑 Cihaz kimliği:', DEVICE_KEY);
     updateStatus('Supabase bağlı — hazır', true);
+    if (typeof FocusStats !== 'undefined') FocusStats.init();
   } else {
     console.error('❌ Supabase bağlantısı kurulamadı');
     updateStatus('Bağlantı hatası', false);

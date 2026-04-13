@@ -6,6 +6,9 @@
   <meta name="description" content="Focus Together — Uzakta olsan da birlikte çalış. Senkron Pomodoro timer ile dijital kütüphane masası deneyimi." />
   <title>Focus Together — Birlikte Çalış</title>
 
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='12' cy='16' r='9' fill='none' stroke='%23a78bfa' stroke-width='1.5'/><circle cx='20' cy='16' r='9' fill='none' stroke='%23a78bfa' stroke-width='1.5'/></svg>" />
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,6 +16,11 @@
 
   <!-- Supabase JS Client (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Focus Together — Birlikte Çalış" />
+  <meta property="og:description" content="Uzakta olsan da birlikte çalış. Senkron Pomodoro timer ile dijital kütüphane masası deneyimi." />
+  <meta property="og:type" content="website" />
 
   <!-- App Styles -->
   <link rel="stylesheet" href="css/style.css" />
@@ -128,6 +136,9 @@
             <span class="user-dot"></span>
             1 kişi
           </div>
+          <button class="btn btn-ghost btn-sm" id="btn-stats-toggle" type="button" title="İstatistikler">
+            📊
+          </button>
           <button class="btn btn-ghost btn-sm" id="btn-leave-room" type="button">
             Ayrıl
           </button>
@@ -137,10 +148,39 @@
       <!-- Presence User List -->
       <div class="presence-bar" id="presence-user-list"></div>
 
+      <!-- Stats Panel -->
+      <div class="stats-panel" id="stats-panel">
+        <div class="stats-panel-header">
+          <span class="stats-panel-title">📊 İstatistikler</span>
+          <button class="stats-panel-close" id="btn-stats-close" type="button">✕</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stats-today-count">0</div>
+            <div class="stat-label">Bugün</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stats-today-mins">0</div>
+            <div class="stat-label">Dakika</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stats-week-count">0</div>
+            <div class="stat-label">Bu Hafta</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stats-streak">0</div>
+            <div class="stat-label">🔥 Seri</div>
+          </div>
+        </div>
+        <div class="stats-chart-wrapper">
+          <div class="stats-chart-title">Son 7 Gün</div>
+          <div class="stats-chart" id="stats-chart"></div>
+        </div>
+      </div>
+
       <!-- Timer Card -->
       <div class="timer-card">
 
-        <!-- Mode Selector -->
         <div class="timer-mode-tabs">
           <button class="mode-tab active" data-timer-mode="pomodoro" type="button">Pomodoro</button>
           <button class="mode-tab" data-timer-mode="long" type="button">Uzun Odak</button>
@@ -149,7 +189,6 @@
 
         <div class="timer-mode" id="timer-mode-label">Pomodoro — 25 dakika</div>
 
-        <!-- Progress Ring + Timer -->
         <div class="timer-ring-wrapper">
           <svg class="timer-ring" viewBox="0 0 300 300" aria-hidden="true">
             <circle class="timer-ring-bg" cx="150" cy="150" r="140" />
@@ -161,7 +200,6 @@
           </div>
         </div>
 
-        <!-- Controls -->
         <div class="timer-actions">
           <button class="btn btn-primary btn-lg" id="btn-start-timer" type="button">
             <span class="btn-label">Başlat</span>
@@ -174,7 +212,6 @@
           </button>
         </div>
 
-        <!-- Pomodoro Counter -->
         <div class="pomodoro-counter">
           🍅 <span id="pomodoro-count">0</span> pomodoro tamamlandı
         </div>
@@ -226,6 +263,7 @@
   <script src="js/presence.js"></script>
   <script src="js/timer.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/stats.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
