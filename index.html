@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Focus Together — Uzakta olsan da birlikte çalış. Senkron Pomodoro timer ile dijital kütüphane masası deneyimi." />
+  <title>Focus Together — Birlikte Çalış</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Supabase JS Client (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div id="app" class="app">
+
+    <!-- Ambient background blobs -->
+    <div class="ambient-bg" aria-hidden="true">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  LOBBY CARD (oda oluştur / katıl)          -->
+    <!-- ═══════════════════════════════════════════ -->
+    <main class="lobby-card" id="lobby-card">
+
+      <!-- Logo / Brand -->
+      <div class="brand">
+        <div class="brand-icon" id="brand-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="12" cy="16" r="9" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="20" cy="16" r="9" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">Focus Together</h1>
+        <p class="brand-subtitle">Uzakta olsan da birlikte çalış</p>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" id="error-message" hidden></div>
+
+      <!-- Action Buttons -->
+      <div class="actions" id="actions-default">
+        <button class="btn btn-primary" id="btn-create-room" type="button">
+          <span class="btn-icon">＋</span>
+          <span class="btn-label">Yeni Oda Oluştur</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+        <div class="divider-text"><span>veya</span></div>
+        <div class="join-group">
+          <input
+            type="text"
+            id="input-room-code"
+            class="input-code"
+            placeholder="6 haneli kodu gir"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="off"
+          />
+          <button class="btn btn-secondary" id="btn-join-room" type="button" disabled>
+            <span class="btn-label">Katıl</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Room Code Display (after creation) -->
+      <div class="room-created" id="room-created" hidden>
+        <div class="code-label">Oda Kodun</div>
+        <div class="code-display" id="code-display">
+          <span class="code-digit" data-index="0">—</span>
+          <span class="code-digit" data-index="1">—</span>
+          <span class="code-digit" data-index="2">—</span>
+          <span class="code-digit" data-index="3">—</span>
+          <span class="code-digit" data-index="4">—</span>
+          <span class="code-digit" data-index="5">—</span>
+        </div>
+        <p class="code-hint">Bu kodu çalışma arkadaşınla paylaş</p>
+        <div class="room-created-actions">
+          <button class="btn btn-ghost" id="btn-copy-code" type="button">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="5" width="8" height="8" rx="1.5"/>
+              <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5"/>
+            </svg>
+            Kodu Kopyala
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-enter-room" type="button">
+            Odaya Gir →
+          </button>
+        </div>
+        <button class="btn btn-link" id="btn-back" type="button">← Geri dön</button>
+      </div>
+
+      <!-- Status indicator -->
+      <div class="status-bar" id="status-bar">
+        <span class="status-dot"></span>
+        <span class="status-text" id="status-text">Bağlantı bekleniyor</span>
+      </div>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  ROOM SCREEN (odaya girildiğinde)          -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="room-screen" id="room-screen" hidden>
+
+      <!-- Room Header -->
+      <div class="room-header">
+        <div class="room-header-left">
+          <div class="room-badge">
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="12" cy="16" r="9" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+              <circle cx="20" cy="16" r="9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="room-header-title">Focus Together</div>
+            <div class="room-header-code">Oda: <strong id="room-code-display">------</strong></div>
+          </div>
+        </div>
+        <div class="room-header-right">
+          <div class="user-count" id="room-user-count">
+            <span class="user-dot"></span>
+            1 kişi
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-leave-room" type="button">
+            Ayrıl
+          </button>
+        </div>
+      </div>
+
+      <!-- Timer Area (placeholder — Adım 3'te tamamlanacak) -->
+      <div class="timer-card">
+        <div class="timer-mode">Pomodoro — 25 dakika</div>
+        <div class="timer-display">25:00</div>
+        <div class="timer-actions">
+          <button class="btn btn-primary btn-lg" id="btn-start-timer" type="button" disabled>
+            ▶ Başlat
+          </button>
+        </div>
+        <p class="timer-hint">Timer işlevselliği Adım 3'te eklenecek</p>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Focus Together &copy; 2025 — Sade, odaklı, birlikte.</p>
+    </footer>
+
+  </div>
+
+  <!-- App Logic -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
