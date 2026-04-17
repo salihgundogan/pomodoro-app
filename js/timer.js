@@ -26,7 +26,7 @@ const FocusTimer = (function () {
     phase: 'work',         // 'work' veya 'break'
     status: 'idle',        // 'idle' | 'running' | 'paused' | 'done'
     durationSeconds: MODES.pomodoro.work,
-    startedAt: null,       // ISO timestamp
+    startedAt: null,       // ISO timestamp (server clock)
     pausedRemaining: null, // paused durumunda kalan saniye
     elapsed: 0,
     completedPomodoros: 0,
@@ -34,6 +34,58 @@ const FocusTimer = (function () {
 
   let tickInterval = null;
   let realtimeChannel = null;
+
+  // ─── Server Time Offset ────────────────────────────
+  // serverTimeOffset = serverNow - clientNow (ms)
+  // Pozitif değer → sunucu saati istemciden ileride
+  let serverTimeOffset = 0;
+
+  /**
+   * Supabase sunucu saati ile istemci saati arasındaki
+   * farkı (offset) hesaplar. Bu sayede tüm istemciler
+   * aynı referans saatini kullanır.
+   */
+  async function calibrateServerTime() {
+    if (!supabaseClient) return;
+    try {
+      // Yöntem 1: RPC fonksiyonu ile sunucu saatini al
+      const t0 = Date.now();
+      const { data, error } = await supabaseClient
+        .rpc('get_server_time');
+      const t1 = Date.now();
+
+      if (!error && data) {
+        const rtt = t1 - t0;
+        const serverMs = new Date(data).getTime();
+        serverTimeOffset = serverMs - t0 - Math.floor(rtt / 2);
+        console.log(`🕐 Sunucu saat ofseti: ${serverTimeOffset}ms (RTT: ${rtt}ms)`);
+        return;
+      }
+
+      // Yöntem 2: Basit bir sorgu ile response header'dan server zamanı tahmin et
+      // RPC yoksa rooms tablosundan sunucu zamanını çek
+      const t2 = Date.now();
+      const { data: timeData, error: timeErr } = await supabaseClient
+        .from('rooms')
+        .select('created_at')
+        .limit(0);
+      const t3 = Date.now();
+
+      // Fallback: Supabase REST header'ındaki Date'i kullanamasak da
+      // en azından RTT'yi biliyoruz, offset ≈ 0 kabul ederiz
+      console.warn('⚠️ RPC fonksiyonu bulunamadı. get_server_time fonksiyonunu Supabase SQL Editor\'da oluşturun.');
+      console.warn('SQL: CREATE OR REPLACE FUNCTION get_server_time() RETURNS timestamptz AS $$ SELECT now() $$ LANGUAGE sql STABLE;');
+    } catch (err) {
+      console.warn('⚠️ calibrateServerTime hatası:', err);
+    }
+  }
+
+  /**
+   * Sunucu saatine göre anlık zamanı döndürür (ms).
+   */
+  function serverNow() {
+    return Date.now() + serverTimeOffset;
+  }
 
   // ─── DOM Referansları ─────────────────────────────
   const els = {};
@@ -62,7 +114,8 @@ const FocusTimer = (function () {
   async function start() {
     if (state.status === 'running') return;
 
-    const now = new Date().toISOString();
+    // Sunucu saatine göre başlangıç zamanı
+    const now = new Date(serverNow()).toISOString();
     let duration = state.durationSeconds;
 
     // Paused durumundan devam ediyorsa kalan süreyi kullan
@@ -150,7 +203,8 @@ const FocusTimer = (function () {
       return state.durationSeconds;
     }
 
-    const now = Date.now();
+    // Sunucu saatine göre elapsed hesapla
+    const now = serverNow();
     const started = new Date(state.startedAt).getTime();
     const elapsed = Math.floor((now - started) / 1000);
     const remaining = Math.max(0, state.durationSeconds - elapsed);
@@ -499,9 +553,9 @@ const FocusTimer = (function () {
           onTimerComplete();
         }
       } else if (state.status === 'paused') {
-        // Paused → kalan süreyi göster
+        // Paused → kalan süreyi göster (sunucu saatine göre)
         const elapsed = state.startedAt
-          ? Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000)
+          ? Math.floor((serverNow() - new Date(state.startedAt).getTime()) / 1000)
           : 0;
         state.pausedRemaining = Math.max(0, state.durationSeconds - elapsed);
         renderTimer(state.pausedRemaining);
@@ -593,13 +647,16 @@ const FocusTimer = (function () {
   //  PUBLIC API
   // ═══════════════════════════════════════════════════
 
-  function init(roomId) {
+  async function init(roomId) {
     cacheDom();
 
     // Bildirim izni iste
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+
+    // Sunucu saat ofsetini kalibre et (önce bu yapılmalı)
+    await calibrateServerTime();
 
     // Mode buton click
     els.modeBtns.forEach(btn => {
