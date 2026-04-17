@@ -6,7 +6,7 @@
    ✅ Kullanıcı sayısı güncelleme
    ✅ Sekme kapanma / bağlantı kesilme tespiti
    ✅ Heartbeat (düzenli sinyal)
-   ✅ Reconnect desteği
+   ✅ Reconnect & duplicate temizleme desteği
    ═══════════════════════════════════════════════════ */
 
 const FocusPresence = (function () {
@@ -17,6 +17,12 @@ const FocusPresence = (function () {
   let roomId = null;
   let deviceKey = null;
   let onlineUsers = [];
+  let isTracked = false;     // Şu an track edili mi?
+
+  // Bound handler referansları (removeEventListener için)
+  let _boundBeforeUnload = null;
+  let _boundPageHide = null;
+  let _boundVisibilityChange = null;
 
   // ─── DOM Referansları ─────────────────────────────
   let els = {};
@@ -43,7 +49,7 @@ const FocusPresence = (function () {
     deviceKey = dKey;
     cacheDom();
 
-    // Önceki kanalı temizle
+    // Önceki kanalı tamamen temizle (duplicate önleme)
     unsubscribe();
 
     presenceChannel = supabaseClient.channel(`presence:${roomId}`, {
@@ -75,6 +81,9 @@ const FocusPresence = (function () {
         console.log(`📡 Presence kanal: ${status}`);
 
         if (status === 'SUBSCRIBED') {
+          // Önce eski kaydı temizle (duplicate önleme)
+          await presenceChannel.untrack();
+
           // Kendimizi presence olarak track et
           await presenceChannel.track({
             device_key: deviceKey,
@@ -82,28 +91,51 @@ const FocusPresence = (function () {
             user_agent: navigator.userAgent.slice(0, 50),
           });
 
+          isTracked = true;
           updateConnectionStatus(true);
         }
       });
 
-    // Sekme kapanırken temizle
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // ─── Lifecycle Event'leri ───────────────────────
+    // Bound referanslar oluştur (temiz kaldırma için)
+    _boundBeforeUnload = handleBeforeUnload.bind(null);
+    _boundPageHide = handlePageHide.bind(null);
+    _boundVisibilityChange = handleVisibilityChange.bind(null);
 
-    // Sekme görünürlük değişimi
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', _boundBeforeUnload);
+    window.addEventListener('pagehide', _boundPageHide);
+    document.addEventListener('visibilitychange', _boundVisibilityChange);
   }
 
   /**
-   * Presence kanalından çık.
+   * Presence kanalından çık — tüm kaynakları temizle.
    */
   function unsubscribe() {
+    // Lifecycle dinleyicileri temizle
+    if (_boundBeforeUnload) {
+      window.removeEventListener('beforeunload', _boundBeforeUnload);
+      _boundBeforeUnload = null;
+    }
+    if (_boundPageHide) {
+      window.removeEventListener('pagehide', _boundPageHide);
+      _boundPageHide = null;
+    }
+    if (_boundVisibilityChange) {
+      document.removeEventListener('visibilitychange', _boundVisibilityChange);
+      _boundVisibilityChange = null;
+    }
+
     if (presenceChannel) {
-      presenceChannel.untrack();
+      try {
+        presenceChannel.untrack();
+      } catch (e) {
+        // Kanal zaten kapalıysa sessizce atla
+      }
       supabaseClient.removeChannel(presenceChannel);
       presenceChannel = null;
     }
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+    isTracked = false;
     onlineUsers = [];
   }
 
@@ -169,25 +201,54 @@ const FocusPresence = (function () {
   //  EVENT HANDLERS
   // ═══════════════════════════════════════════════════
 
+  /**
+   * beforeunload: Sekme kapanırken presence'ı kaldır.
+   * untrack() async olduğu için, ek olarak sendBeacon
+   * ile Supabase Realtime WebSocket'i kapatmayı deneriz.
+   */
   function handleBeforeUnload() {
     if (presenceChannel) {
+      // untrack çağır — tarayıcı izin verdiği kadarıyla çalışır
       presenceChannel.untrack();
+      isTracked = false;
     }
   }
 
+  /**
+   * pagehide: beforeunload'dan daha güvenilir (özellikle mobilde).
+   * Safari ve mobil Chrome'da beforeunload her zaman ateşlenmez.
+   */
+  function handlePageHide(event) {
+    if (presenceChannel) {
+      presenceChannel.untrack();
+      isTracked = false;
+    }
+  }
+
+  /**
+   * visibilitychange: Sekme arka plana gidince untrack,
+   * geri gelince yeniden track et.
+   * Bu, tarayıcının bellek tasarrufu modunda sekmeyi
+   * dondurmasına (freeze) karşı koruma sağlar.
+   */
   function handleVisibilityChange() {
     if (!presenceChannel) return;
 
     if (document.visibilityState === 'hidden') {
-      // Sekme arka plana gitti — ama bağlantıyı koparmıyoruz
-      console.log('📱 Sekme arka plana gitti');
-    } else {
-      // Sekme geri geldi — presence güncelle
-      console.log('📱 Sekme geri geldi');
+      // Sekme arka plana gitti → presence'ı kaldır
+      // Böylece tarayıcı sekmeyi dondurursa "hayalet" olmaz
+      console.log('📱 Sekme arka plana gitti — untrack');
+      presenceChannel.untrack();
+      isTracked = false;
+    } else if (document.visibilityState === 'visible') {
+      // Sekme geri geldi → yeniden track et
+      console.log('📱 Sekme geri geldi — re-track');
       presenceChannel.track({
         device_key: deviceKey,
         joined_at: new Date().toISOString(),
         user_agent: navigator.userAgent.slice(0, 50),
+      }).then(() => {
+        isTracked = true;
       });
     }
   }
