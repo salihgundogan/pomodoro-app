@@ -794,6 +794,71 @@ body {
   color: var(--clr-accent);
 }
 
+/* Daily Summary (Özel mod) */
+.daily-summary {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--clr-border);
+  animation: fadeSlideUp 0.4s ease forwards;
+}
+
+.daily-summary-title {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--clr-text-dim);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.daily-summary-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.daily-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.daily-summary-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--clr-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.daily-summary-label {
+  font-size: 0.6875rem;
+  color: var(--clr-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.daily-summary-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--clr-border);
+}
+
+/* Özel mod — count-up ring animasyonu */
+.timer-ring-progress.counting-up {
+  stroke: var(--clr-teal);
+  filter: drop-shadow(0 0 8px var(--clr-teal-glow));
+  animation: ringPulse 3s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
 /* ─── Presence ───────────────────────────────────── */
 .presence-bar {
   display: flex;

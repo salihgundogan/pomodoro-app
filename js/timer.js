@@ -9,8 +9,7 @@
    ✅ Otomatik mola geçişi
    ═══════════════════════════════════════════════════ */
 
-const FocusTimer = (function () {
-  'use strict';
+import { supabaseClient } from './config.js';
 
   // ─── Timer Modları ────────────────────────────────
   const MODES = {
@@ -690,9 +689,7 @@ const FocusTimer = (function () {
     state.completedPomodoros = 0;
   }
 
-  return { init, destroy, getState: () => ({ ...state }) };
-
-})();
+export const FocusTimer = { init, destroy, getState: () => ({ ...state }) };
 
 // showToast fonksiyonunu global yapmak için
 // (app.js'deki IIFE içinden erişilebilir olması lazım)

@@ -8,10 +8,7 @@
    ✅ Streak (ard arda gün)
    ═══════════════════════════════════════════════════ */
 
-const FocusStats = (function () {
-  'use strict';
-
-  const STORAGE_KEY = 'ft_pomodoro_history';
+const STORAGE_KEY = 'ft_pomodoro_history';
 
   // ─── DOM ──────────────────────────────────────────
   let els = {};
@@ -166,6 +163,4 @@ const FocusStats = (function () {
   //  PUBLIC API
   // ═══════════════════════════════════════════════════
 
-  return { init, refresh };
-
-})();
+export const FocusStats = { init, refresh };

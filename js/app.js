@@ -8,10 +8,13 @@
    ✅ İstatistikler (localStorage)
    ═══════════════════════════════════════════════════ */
 
-(function () {
-  'use strict';
+import { supabaseClient } from './config.js';
+import { FocusTimer } from './timer.js';
+import { FocusPresence } from './presence.js';
+import { FocusChat } from './chat.js';
+import { FocusStats } from './stats.js';
 
-  // ─── DOM Referansları ────────────────────────────
+// ─── DOM Referansları ────────────────────────────
   const btnCreateRoom   = document.getElementById('btn-create-room');
   const btnJoinRoom     = document.getElementById('btn-join-room');
   const btnCopyCode     = document.getElementById('btn-copy-code');
@@ -349,6 +352,7 @@
       setTimeout(() => toast.remove(), 350);
     }, 2500);
   }
+  window.showToast = showToast;
 
   // ═══════════════════════════════════════════════════
   //  INPUT VALIDATION
@@ -399,5 +403,3 @@
     console.error('❌ Supabase bağlantısı kurulamadı');
     updateStatus('Bağlantı hatası', false);
   }
-
-})();

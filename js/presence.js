@@ -9,8 +9,7 @@
    ✅ Reconnect & duplicate temizleme desteği
    ═══════════════════════════════════════════════════ */
 
-const FocusPresence = (function () {
-  'use strict';
+import { supabaseClient } from './config.js';
 
   // ─── State ───────────────────────────────────────
   let presenceChannel = null;
@@ -257,10 +256,8 @@ const FocusPresence = (function () {
   //  PUBLIC API
   // ═══════════════════════════════════════════════════
 
-  return {
+export const FocusPresence = {
     subscribe,
     unsubscribe,
     getOnlineCount,
   };
-
-})();

@@ -8,8 +8,7 @@
    ✅ Mesaj baloncukları (ben / arkadaş ayrımı)
    ═══════════════════════════════════════════════════ */
 
-const FocusChat = (function () {
-  'use strict';
+import { supabaseClient } from './config.js';
 
   // ─── Hazır Mesajlar ───────────────────────────────
   const QUICK_MESSAGES = [
@@ -321,6 +320,4 @@ const FocusChat = (function () {
   //  PUBLIC API
   // ═══════════════════════════════════════════════════
 
-  return { init, destroy };
-
-})();
+export const FocusChat = { init, destroy };
