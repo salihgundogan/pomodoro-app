@@ -22,7 +22,6 @@ const FocusPresence = (function () {
   // Bound handler referansları (removeEventListener için)
   let _boundBeforeUnload = null;
   let _boundPageHide = null;
-  let _boundVisibilityChange = null;
 
   // ─── DOM Referansları ─────────────────────────────
   let els = {};
@@ -97,14 +96,16 @@ const FocusPresence = (function () {
       });
 
     // ─── Lifecycle Event'leri ───────────────────────
-    // Bound referanslar oluştur (temiz kaldırma için)
+    // Sadece gerçek sayfa kapanma event'lerini dinle.
+    // visibilitychange kullanılmıyor çünkü sekme değiştirme
+    // veya arka plana alma gerçek bir ayrılma değildir.
+    // Supabase Presence'ın kendi heartbeat timeout'u,
+    // gerçek WebSocket kopmasını otomatik algılar.
     _boundBeforeUnload = handleBeforeUnload.bind(null);
     _boundPageHide = handlePageHide.bind(null);
-    _boundVisibilityChange = handleVisibilityChange.bind(null);
 
     window.addEventListener('beforeunload', _boundBeforeUnload);
     window.addEventListener('pagehide', _boundPageHide);
-    document.addEventListener('visibilitychange', _boundVisibilityChange);
   }
 
   /**
@@ -119,10 +120,6 @@ const FocusPresence = (function () {
     if (_boundPageHide) {
       window.removeEventListener('pagehide', _boundPageHide);
       _boundPageHide = null;
-    }
-    if (_boundVisibilityChange) {
-      document.removeEventListener('visibilitychange', _boundVisibilityChange);
-      _boundVisibilityChange = null;
     }
 
     if (presenceChannel) {
@@ -225,33 +222,13 @@ const FocusPresence = (function () {
     }
   }
 
-  /**
-   * visibilitychange: Sekme arka plana gidince untrack,
-   * geri gelince yeniden track et.
-   * Bu, tarayıcının bellek tasarrufu modunda sekmeyi
-   * dondurmasına (freeze) karşı koruma sağlar.
-   */
-  function handleVisibilityChange() {
-    if (!presenceChannel) return;
-
-    if (document.visibilityState === 'hidden') {
-      // Sekme arka plana gitti → presence'ı kaldır
-      // Böylece tarayıcı sekmeyi dondurursa "hayalet" olmaz
-      console.log('📱 Sekme arka plana gitti — untrack');
-      presenceChannel.untrack();
-      isTracked = false;
-    } else if (document.visibilityState === 'visible') {
-      // Sekme geri geldi → yeniden track et
-      console.log('📱 Sekme geri geldi — re-track');
-      presenceChannel.track({
-        device_key: deviceKey,
-        joined_at: new Date().toISOString(),
-        user_agent: navigator.userAgent.slice(0, 50),
-      }).then(() => {
-        isTracked = true;
-      });
-    }
-  }
+  // NOT: visibilitychange handler kaldırıldı.
+  // Sekme değiştirme / arka plana alma → untrack yapmak
+  // yanlış pozitif "ayrıldı" mesajlarına neden oluyordu.
+  // Supabase Presence kendi heartbeat mekanizması ile
+  // gerçek WebSocket kopmasını (sekme kapatma, internet
+  // kesintisi, tarayıcı kapatma) otomatik algılar ve
+  // leave event'i tetikler.
 
   // ═══════════════════════════════════════════════════
   //  HELPERS
