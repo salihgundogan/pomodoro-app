@@ -8,7 +8,7 @@
    ✅ İstatistikler (localStorage)
    ═══════════════════════════════════════════════════ */
 
-import { supabaseClient } from './config.js';
+import { supabaseClient, CONFIG } from './config.js';
 import { FocusTimer } from './timer.js';
 import { FocusPresence } from './presence.js';
 import { FocusChat } from './chat.js';
